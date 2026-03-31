@@ -1,10 +1,20 @@
-FROM --platform=linux/amd64 node:20
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+# install ALL deps for build
+RUN npm ci
+
+COPY . .
+
+# build TS → JS
+RUN npm run build
+
+# remove dev deps
+RUN npm prune --omit=dev
 
 EXPOSE 3000
-WORKDIR /app
-COPY package.json package-lock.json ./ 
-RUN npm install
-COPY . . 
-RUN wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
-ENTRYPOINT npm run start
+CMD ["node", "dist/server.js"]
