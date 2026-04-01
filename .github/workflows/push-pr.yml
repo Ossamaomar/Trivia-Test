@@ -23,26 +23,31 @@ jobs:
       - name: Login to Amazon ECR
         run: aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 964993353079.dkr.ecr.eu-west-3.amazonaws.com
           
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-          
       - name: Build the backend Docker image 
-        run: docker build -t trivia-backend ./backend
+        run: docker build -t trivia-backend:${{ github.sha }} ./backend
 
       - name: Tag the backend Docker image 
-        run: docker tag trivia-backend:latest 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:latest
+        run: |
+          docker tag trivia-backend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:${{ github.sha }}
+          docker tag trivia-backend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:latest
       
       - name: Push the backend Docker image 
-        run: docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:latest
+        run: |
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:${{ github.sha }}
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:latest
         
       - name: Build the frontend Docker image 
-        run: docker build -t trivia-frontend ./frontend
+        run: docker build -t trivia-frontend:${{ github.sha }} ./frontend
       
       - name: Tag the frontend Docker image 
-        run: docker tag trivia-frontend:latest 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:latest
+        run: |
+            docker tag trivia-frontend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:${{ github.sha }}
+            docker tag trivia-frontend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:latest
 
       - name: Push the frontend Docker image 
-        run: docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:latest
+        run: |
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:${{ github.sha }}
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:latest
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -85,7 +90,7 @@ jobs:
                 | docker login --username AWS \
                 --password-stdin 964993353079.dkr.ecr.eu-west-3.amazonaws.com
 
-                docker compose down
                 docker compose pull
                 docker compose up -d
+                docker image prune -f
       

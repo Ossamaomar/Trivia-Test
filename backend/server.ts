@@ -9,17 +9,15 @@ import apiRouter from "./api"
 const app = express();
 app.use(compression());
 app.use(express.json());
-app.use(cors({
-    origin: [
-        "http://13.36.38.27:80",
-        "http://localhost:80"
-    ]
-}))
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',')
+  : ['http://localhost:5173'];
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.urlencoded());
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-const mongoDbUri = process.env.MONGODB_URI || 'mongodb+srv://root:pass123@cluster0.386c3z5.mongodb.net/?appName=Cluster0';
+const mongoDbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/trivia';
 console.log(mongoDbUri);
 const db = mongoose.connect(mongoDbUri, {
     connectTimeoutMS: 1000,
@@ -33,8 +31,8 @@ db.catch((err) => {
 
 ensureInitialData();
 
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use("/api", apiRouter);
-
 app.listen(port, () => {
     console.log(`Server is listening on port ${port}`);
 });
