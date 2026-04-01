@@ -60,7 +60,7 @@ jobs:
       - name: Copy staging-compose.yml
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST_STAGING }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "staging-compose.yml"
@@ -70,7 +70,7 @@ jobs:
       - name: Copy staging-nginx.conf
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST_STAGING }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "staging-nginx.conf"
@@ -80,7 +80,7 @@ jobs:
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-            host: ${{ secrets.EC2_HOST }}
+            host: ${{ secrets.EC2_HOST_STAGING }}
             username: ${{ secrets.EC2_USER }}
             key: ${{ secrets.EC2_SSH_KEY }}
             script: |
