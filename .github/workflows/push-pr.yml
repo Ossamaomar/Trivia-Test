@@ -58,7 +58,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.yml"
+          source: "compose.yml"
           target: "~/app"
 
       # Copy nginx.conf to EC2
