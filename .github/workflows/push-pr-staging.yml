@@ -73,7 +73,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "nginx.conf"
+          source: "staging-nginx.conf"
           target: "~/staging"
 
       # SSH and run deployment commands
