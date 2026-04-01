@@ -19,6 +19,7 @@ jobs:
           registry-uri: 964993353079.dkr.ecr.eu-west-3.amazonaws.com
           username: ${{ secrets.AWS_ACCESS_KEY_ID }}
           password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: eu-west-3
           
       - name: Build the backend Docker image 
         run: docker build -t trivia-backend ./backend
@@ -34,6 +35,6 @@ jobs:
       
       - name: Tag the frontend Docker image 
         run: docker tag trivia-frontend:latest 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:latest
-        
+
       - name: Push the frontend Docker image 
         run: docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:latest
