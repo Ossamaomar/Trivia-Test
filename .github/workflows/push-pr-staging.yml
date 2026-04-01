@@ -1,0 +1,96 @@
+name: Push and PR Staging
+
+on:
+  push:
+    branches: [ staging ]
+  pull_request:
+    branches: [ staging ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+     
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6.0.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-3
+      
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 964993353079.dkr.ecr.eu-west-3.amazonaws.com
+          
+      - name: Build the backend Docker image 
+        run: docker build -t trivia-backend:${{ github.sha }} ./backend
+
+      - name: Tag the backend Docker image 
+        run: |
+          docker tag trivia-backend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:${{ github.sha }}
+          docker tag trivia-backend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:staging
+      
+      - name: Push the backend Docker image 
+        run: |
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:${{ github.sha }}
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:staging
+        
+      - name: Build the frontend Docker image 
+        run: docker build -t trivia-frontend:${{ github.sha }} ./frontend
+      
+      - name: Tag the frontend Docker image 
+        run: |
+            docker tag trivia-frontend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:${{ github.sha }}
+            docker tag trivia-frontend:${{ github.sha }} 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:staging
+
+      - name: Push the frontend Docker image 
+        run: |
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:${{ github.sha }}
+            docker push 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:staging
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Copy docker-compose.yml to EC2
+      - name: Copy docker-compose.yml
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "staging-compose.yml"
+          target: "~/staging"
+
+      # Copy nginx.conf to EC2
+      - name: Copy nginx.conf
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "nginx.conf"
+          target: "~/staging"
+
+      # SSH and run deployment commands
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            script: |
+                cd ~/staging
+
+                aws ecr get-login-password --region eu-west-3 \
+                | docker login --username AWS \
+                --password-stdin 964993353079.dkr.ecr.eu-west-3.amazonaws.com
+
+                docker compose pull
+                docker compose up -d
+                docker image prune -f
+      

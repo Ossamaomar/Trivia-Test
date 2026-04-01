@@ -1,0 +1,24 @@
+services:
+  frontend:
+    image: 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-frontend:staging
+    expose:
+      - "80"
+
+  backend:
+    image: 964993353079.dkr.ecr.eu-west-3.amazonaws.com/trivia-backend:staging
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=staging
+      - MONGODB_URI=${MONGODB_URI}    # could point to a separate test DB
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "8080:80"                     # different external port!
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend
