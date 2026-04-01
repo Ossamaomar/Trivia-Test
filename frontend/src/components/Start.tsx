@@ -13,7 +13,7 @@ export default function Start({onStart, onHighscore}: StartProps) {
     return (
         <Container className={"text-center align-items-center justify-content-center min-vh-100 d-flex"}>
             <Stack gap={2} className={"align-self-center"}>
-                <Button onClick={onStart} size="lg" color="#abc213">Launch game Now</Button>
+                <Button onClick={onStart} size="lg" color="#abc213">Launch Game!!!!!</Button>
                 <Button onClick={onHighscore} size="lg" variant="secondary">Show highscore</Button>
             </Stack>
 
