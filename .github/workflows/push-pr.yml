@@ -75,13 +75,17 @@ jobs:
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/app
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            script: |
+                cd ~/app
 
-            docker compose down
-            docker compose pull
-            docker compose up -d
+                aws ecr get-login-password --region eu-west-3 \
+                | docker login --username AWS \
+                --password-stdin 964993353079.dkr.ecr.eu-west-3.amazonaws.com
+
+                docker compose down
+                docker compose pull
+                docker compose up -d
       
