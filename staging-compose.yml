@@ -18,7 +18,7 @@ services:
     ports:
       - "8080:80"                     # different external port!
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./staging-nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - frontend
       - backend
